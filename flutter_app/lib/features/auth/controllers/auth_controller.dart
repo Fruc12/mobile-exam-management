@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
 /// ----------------------
@@ -11,19 +12,23 @@ import '../services/auth_service.dart';
 class AuthState {
   final bool isAuthenticated;
   final String? email;
+  final UserModel? user;
 
   const AuthState({
     required this.isAuthenticated,
     this.email,
+    this.user,
   });
 
   AuthState copyWith({
     bool? isAuthenticated,
     String? email,
+    UserModel? user,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       email: email ?? this.email,
+      user: user ?? this.user,
     );
   }
 }
@@ -43,8 +48,6 @@ class AuthController extends StateNotifier<AuthState> {
     required String password,
   }) async {
     await _authService.login(email, password);
-
-    // state = state.copyWith(email: email);
   }
 
   /// VERIFY OTP → TOKEN
@@ -56,8 +59,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
 
     await SecureStorage.saveToken(response.token!);
-
-    state = state.copyWith(isAuthenticated: true);
+    await tryAutoLogin(); // On récupère l'user immédiatement après le token
   }
 
   /// REGISTER
@@ -66,15 +68,11 @@ class AuthController extends StateNotifier<AuthState> {
     required String email,
     required String password,
   }) async {
-    final response =
-    await _authService.register(name, email, password);
+    final response = await _authService.register(name, email, password);
 
     if (response.success != true) {
       throw Exception(response.message);
     }
-
-    // state = state.copyWith(email: email);
-
   }
 
   /// RESEND EMAIL
@@ -87,13 +85,23 @@ class AuthController extends StateNotifier<AuthState> {
     final token = await SecureStorage.getToken();
     if (token == null) return;
 
-    await _authService.getUser();
-    state = state.copyWith(isAuthenticated: true);
+    try {
+      final user = await _authService.getUser();
+      state = state.copyWith(
+        isAuthenticated: true,
+        user: user,
+      );
+    } catch (e) {
+      await logout();
+      rethrow;
+    }
   }
 
   /// LOGOUT
   Future<void> logout() async {
-    await _authService.logout();
+    try {
+      await _authService.logout();
+    } catch (_) {}
     await SecureStorage.clear();
     state = const AuthState(isAuthenticated: false);
   }
@@ -113,9 +121,10 @@ final appBootstrapProvider = FutureProvider<void>((ref) async {
   try {
     final authController = ref.read(authControllerProvider.notifier);
     await authController.tryAutoLogin();
-  }
-  on DioException{
+  } on DioException {
     await SecureStorage.clear();
     rethrow;
+  } catch (_) {
+    await SecureStorage.clear();
   }
 });

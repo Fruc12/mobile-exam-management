@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -57,8 +58,10 @@ class _OtpVerificationScreenState
 
       /// ✅ Token reçu → Home
       context.go('/home');
-    } catch (e) {
-      setState(() => _error = e.toString());
+    } on DioException catch (e) {
+      setState(() => _error = e.response?.data['message']);
+    } on Exception {
+      setState(() => _error = "Une erreur s'est produite");
     } finally {
       setState(() => _loading = false);
     }
@@ -83,7 +86,7 @@ class _OtpVerificationScreenState
         child: Column(
           children: [
             const Text(
-              'Entrez le code reçu par SMS',
+              'Entrez le code reçu par mail',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -134,8 +137,8 @@ class _OtpVerificationScreenState
             ),
 
             TextButton(
-              onPressed: _remainingSeconds == 0 ? _startTimer : null,
-              child: const Text('Renvoyer le code'),
+              onPressed: _remainingSeconds == 0 ? () => context.go('/login') : null,
+              child: const Text('Se reconnecter'),
             ),
           ],
         ),

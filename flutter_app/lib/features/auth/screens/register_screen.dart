@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,39 +13,51 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _loading = false;
   String? _error;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _nameController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _error = null; });
+
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    // 🔴 Validation locale
+    if (password != confirmPassword) {
+      setState(() {
+        _error = 'Les mots de passe ne correspondent pas';
+      });
+      return;
+    }
+
+    setState(() => _loading = true);
 
     try {
-      /// 🔵 APPEL RÉEL API
       await ref.read(authControllerProvider.notifier).register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        password: _passwordController.text,
+        password: password,
       );
 
-      /// ✅ Email envoyé → info
       context.go('/verify-email-info');
-    } catch (e) {
-      setState(() => _error = e.toString());
+    } on DioException catch (e) {
+      setState(() => _error = e.response?.data['message']);
+    } on Exception {
+      setState(() => _error = "Une erreur s'est produite");
     } finally {
       setState(() => _loading = false);
     }
@@ -66,6 +79,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 12),
+
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -75,12 +89,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 12),
+
             TextField(
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Mot de passe',
                 prefixIcon: Icon(Icons.lock),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                prefixIcon: Icon(Icons.lock_outline),
               ),
             ),
 
@@ -107,6 +132,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 )
                     : const Text('S’inscrire'),
               ),
+            ),
+
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.go('/login'),
+              child: const Text('Se connecter'),
             ),
           ],
         ),

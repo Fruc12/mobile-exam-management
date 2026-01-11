@@ -32,17 +32,10 @@ class UserController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user) {
+        if (!$user) {  // Utilisateur non trouvé
             return response()->json([
                 // 'success' => false,
-                'message' => 'Email non trouvé. Veuillez vous inscrire.',
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        if (!$user->hasVerifiedEmail()) {
-            return response()->json([
-                // 'success' => false,
-                'message' => 'Email non vérifié',
+                'message' => 'Indentifiants incorrects',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -64,6 +57,14 @@ class UserController extends Controller
 //                'code' => Crypt::encrypt($code),
 //            ]);
 
+            if (!$user->hasVerifiedEmail()) {
+                return response()->json([
+                    // 'success' => false,
+                    'message' => 'Email non vérifié. Veuillez vérifier votre boîte mail et cliquer sur le lien de vérification.',
+                    'status' => 'email_not_verified',
+                ], Response::HTTP_FORBIDDEN);
+            }
+
             $user->sendOneTimePassword();
 
             return response()->json([
@@ -72,7 +73,7 @@ class UserController extends Controller
             ]);
         }
         return response()->json([
-            'success' => false,
+            // 'success' => false,
             'message' => 'Identifiants incorrects',
         ], Response::HTTP_FORBIDDEN);
     }
@@ -92,7 +93,7 @@ class UserController extends Controller
             $user = User::find($otp->authenticatable_id);
             if (!$user->hasVerifiedEmail()) {
                 return response()->json([
-                    'success' => false,
+                    // 'success' => false,
                     'message' => 'Email non vérifié',
                 ], Response::HTTP_FORBIDDEN);
             }
@@ -192,9 +193,10 @@ class UserController extends Controller
 
         if ( $user->hasVerifiedEmail() ) {
             return response()->json([
-                'success' => false,
+                // 'success' => false,
                 'message' => 'Email déjà vérifié',
-            ], 400);
+                'status' => 'email_already_verified'
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $user->sendEmailVerificationNotification();

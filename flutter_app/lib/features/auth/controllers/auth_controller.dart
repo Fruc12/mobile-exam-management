@@ -1,5 +1,4 @@
-import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
-
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_client.dart';
@@ -43,14 +42,9 @@ class AuthController extends StateNotifier<AuthState> {
     required String email,
     required String password,
   }) async {
-    final response = await _authService.login(email, password);
+    await _authService.login(email, password);
 
-    if (response.success != true) {
-      printToConsole(response.message);
-      throw Exception(response.message);
-    }
-
-    state = state.copyWith(email: email);
+    // state = state.copyWith(email: email);
   }
 
   /// VERIFY OTP → TOKEN
@@ -79,17 +73,13 @@ class AuthController extends StateNotifier<AuthState> {
       throw Exception(response.message);
     }
 
-    state = state.copyWith(email: email);
+    // state = state.copyWith(email: email);
 
   }
 
   /// RESEND EMAIL
-  Future<void> resendVerificationEmail() async {
-    if (state.email == null) {
-      throw Exception('Email introuvable');
-    }
-
-    await _authService.resendVerificationEmail(state.email!);
+  Future<void> resendVerificationEmail({required String email}) async {
+    await _authService.resendVerificationEmail(email);
   }
 
   /// AUTO LOGIN
@@ -118,3 +108,14 @@ StateNotifierProvider<AuthController, AuthState>(
     AuthService(DioClient.create()),
   ),
 );
+
+final appBootstrapProvider = FutureProvider<void>((ref) async {
+  try {
+    final authController = ref.read(authControllerProvider.notifier);
+    await authController.tryAutoLogin();
+  }
+  on DioException{
+    await SecureStorage.clear();
+    rethrow;
+  }
+});

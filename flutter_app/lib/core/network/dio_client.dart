@@ -10,6 +10,10 @@ class DioClient {
         headers: {
           'Accept': 'application/json',
         },
+
+        /// 🔥 IMPORTANT
+        /// On empêche Dio de throw automatiquement
+        // validateStatus: (status) => status != null && status < 500,
       ),
     );
 
@@ -20,6 +24,7 @@ class DioClient {
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          options.headers['ngrok-skip-browser-warning'] = true;
           return handler.next(options);
         },
       ),

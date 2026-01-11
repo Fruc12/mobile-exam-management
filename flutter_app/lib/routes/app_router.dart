@@ -12,7 +12,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    // On définit l'emplacement initial dynamiquement dès le départ
+    initialLocation: authState.isAuthenticated ? '/home' : '/login',
     redirect: (context, state) {
       final loggedIn = authState.isAuthenticated;
       final loggingIn = state.uri.toString() == '/login' ||
@@ -25,6 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
+
     routes: [
       GoRoute(
         path: '/login',

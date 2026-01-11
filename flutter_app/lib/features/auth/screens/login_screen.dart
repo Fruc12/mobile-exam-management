@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,8 +41,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       /// 👉 Si succès → OTP requis
       context.go('/otp');
-    } catch (e) {
-      setState(() => _error = e.toString());
+    } on DioException catch (e) {
+      if (e.response?.data['status'] == 'email_not_verified') {
+        context.go('/verify-email-info');
+      }
+      else {
+        setState(() => _error = e.response?.data['message']);
+      }
+    } on Exception {
+      setState(() => _error = "Une erreur s'est produite");
     } finally {
       setState(() => _loading = false);
     }

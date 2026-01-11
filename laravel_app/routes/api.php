@@ -17,6 +17,7 @@ Route::middleware(['guest.api'])->group(function () {
 Route::middleware(['auth:sanctum', 'email.verified'])->group(function () {
     Route::post('/logout', [UserController::class , 'logout'])->name('logout');
     Route::get('/user', [UserController::class , 'getAuthenticatedUser'])->name('user');
+    Route::get('/users', [UserController::class , 'getUsers'])->name('users');
 //    Route::get('/email/verify', [UserController::class , 'noticeEmailVerification'])
 //            ->name('verification.notice');
 

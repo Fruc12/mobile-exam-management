@@ -18,7 +18,6 @@ class UserModel {
   bool get isAdmin => role == 'admin';
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // print(json);
     return UserModel(
       id: json['id'],
       name: json['name'],

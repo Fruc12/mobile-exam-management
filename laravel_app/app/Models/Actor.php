@@ -26,6 +26,7 @@ class Actor extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'birthdate' => 'date',
         ];
     }

@@ -51,7 +51,7 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(adminUserControllerProvider);
-    final searchQuery = ref.watch(searchQueryProvider);
+    ref.watch(searchQueryProvider); // Rebuild on search change
 
     return Scaffold(
       appBar: AppBar(
@@ -103,7 +103,7 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
       ),
       body: usersAsync.when(
         data: (users) {
-          final filteredUsers = ref.read(adminUserControllerProvider.notifier).filterUsers(users);
+          final filteredUsers = ref.read(adminUserControllerProvider.notifier).filterUsers(users, _searchController.text);
           
           if (filteredUsers.isEmpty) {
             return const Center(child: Text("Aucun utilisateur trouvé"));
@@ -132,11 +132,8 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
                     if (hasActor) {
                       context.push('/actors/${user.actor!.id}');
                     } else {
-                      // Pour un admin, on pourrait rediriger vers un formulaire de création pour cet user
-                      // ou une page de profil utilisateur
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Cet utilisateur n'a pas encore de profil acteur")),
-                      );
+                      // On redirige vers la page de détails avec l'ID utilisateur même s'il n'a pas d'acteur
+                      context.push('/actors/0?userId=${user.id}');
                     }
                   },
                 );

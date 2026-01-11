@@ -173,6 +173,18 @@ class UserController extends Controller
         ]);
     }
 
+    public function getUsers() : JsonResponse
+    {
+        if ( Auth::user()->role != 'admin' ) {
+            abort(Response::HTTP_FORBIDDEN, "Vous n'êtes pas autorisé à exécuter cette action");
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Utilisateurs récupérés avec succès',
+            'data' => User::all()->where('role', 'user')->loadMissing('actor'),
+        ]);
+    }
+
     public function verifyUserEmail(Request $request) : RedirectResponse
     {
         $user = User::find($request->route('id'));

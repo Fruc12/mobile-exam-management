@@ -57,19 +57,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'create',
-            builder: (_, __) => const ActorFormScreen(),
+            builder: (_, state) {
+              final userId = state.uri.queryParameters['userId'];
+              return ActorFormScreen(userId: userId != null ? int.tryParse(userId) : null);
+            },
           ),
           GoRoute(
             path: ':id',
             builder: (context, state) {
               final id = int.tryParse(state.pathParameters['id'] ?? '');
-              return ActorDetailScreen(actorId: id ?? 0);
+              final userId = state.uri.queryParameters['userId'];
+              
+              return ActorDetailScreen(
+                actorId: (id != 0 && id != null) ? id : null,
+                userId: userId != null ? int.tryParse(userId) : null,
+              );
             },
             routes: [
               GoRoute(
                 path: 'edit',
                 builder: (context, state) {
-                  final id = int.tryParse(state.pathParameters['id'] ?? '');
                   return ActorFormScreen(actor: state.extra as ActorModel?);
                 },
               ),

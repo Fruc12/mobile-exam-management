@@ -18,7 +18,7 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
     // state = await AsyncValue.guard(() => _service.getActors());
   }
 
-  Future<void> createActor({
+  Future<ActorModel?> createActor({
     required String npi,
     required String nRib,
     required File idCard,
@@ -28,6 +28,7 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
     required String diploma,
     required String bank,
     String? phone,
+    int? userId,
   }) async {
     state = const AsyncValue.loading();
     final result = await AsyncValue.guard(() => _service.createActor(
@@ -40,12 +41,15 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
           diploma: diploma,
           bank: bank,
           phone: phone,
+          userId: userId,
         ));
 
-    if (!result.hasError) {
-      await refresh();
-    } else {
+    if (result.hasError) {
       state = AsyncValue.error(result.error!, result.stackTrace!);
+      throw result.error!;
+    } else {
+      await refresh();
+      return result.value;
     }
   }
 
@@ -75,10 +79,11 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
           phone: phone,
         ));
 
-    if (!result.hasError) {
-      await refresh();
-    } else {
+    if (result.hasError) {
       state = AsyncValue.error(result.error!, result.stackTrace!);
+      throw result.error!;
+    } else {
+      await refresh();
     }
   }
 

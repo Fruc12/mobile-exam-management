@@ -28,6 +28,7 @@ class ActorService {
     required String diploma,
     required String bank,
     String? phone,
+    int? userId, // Ajout du userId optionnel
   }) async {
     final formData = FormData.fromMap({
       'npi': npi,
@@ -37,12 +38,18 @@ class ActorService {
       'diploma': diploma,
       'bank': bank,
       if (phone != null) 'phone': phone,
+      if (userId != null) 'user_id': userId, // Transmission du userId au backend
       'id_card': await MultipartFile.fromFile(idCard.path),
       'rib': await MultipartFile.fromFile(rib.path),
     });
 
-    final res = await dio.post('/api/actors', data: formData);
-    return ActorModel.fromJson(res.data['data']);
+    try {
+      final res = await dio.post('/api/actors', data: formData);
+      return ActorModel.fromJson(res.data['data']);
+    }
+    on DioException catch (e) {
+      throw e.response?.data['message'];
+    }
   }
 
   Future<ActorModel> updateActor(
@@ -57,7 +64,6 @@ class ActorService {
     required String bank,
     String? phone,
   }) async {
-    // Laravel might need _method: PUT for multipart update
     final formData = FormData.fromMap({
       '_method': 'PUT',
       'npi': npi,

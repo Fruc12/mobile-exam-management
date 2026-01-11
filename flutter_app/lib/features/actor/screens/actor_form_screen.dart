@@ -8,10 +8,13 @@ import 'package:go_router/go_router.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/actor_controller.dart';
 import '../models/actor_model.dart';
+import '../controllers/admin_user_controller.dart';
 
 class ActorFormScreen extends ConsumerStatefulWidget {
   final ActorModel? actor;
-  const ActorFormScreen({super.key, this.actor});
+  final int? userId; 
+
+  const ActorFormScreen({super.key, this.actor, this.userId});
 
   @override
   ConsumerState<ActorFormScreen> createState() => _ActorFormScreenState();
@@ -68,7 +71,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
       final file = File(result.files.single.path!);
       final size = await file.length();
       
-      if (size > 2 * 1024 * 1024) { // Limite 2Mo (Backend max:2048)
+      if (size > 2 * 1024 * 1024) { 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Le fichier est trop lourd (max 2Mo)"), backgroundColor: Colors.orange),
@@ -90,7 +93,6 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validation des fichiers pour la création (Backend: required)
     if (widget.actor == null && (_idCardFile == null || _ribFile == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Veuillez sélectionner tous les documents"), backgroundColor: Colors.red),
@@ -103,9 +105,12 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
     try {
       final notifier = ref.read(actorControllerProvider.notifier);
       final birthdateStr = _selectedDate.toIso8601String().split('T')[0];
+      final currentUser = ref.read(authControllerProvider).user;
+      final isAdmin = currentUser?.isAdmin ?? false;
 
       if (widget.actor == null) {
-        await notifier.createActor(
+        // CRÉATION
+        final newActor = await notifier.createActor(
           npi: _npiController.text,
           nRib: _nRibController.text,
           idCard: _idCardFile!,
@@ -115,10 +120,24 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
           diploma: _selectedDiploma,
           bank: _selectedBank,
           phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+          userId: widget.userId,
         );
-        // On rafraîchit l'utilisateur pour lier l'objet Actor nouvellement créé
-        await ref.read(authControllerProvider.notifier).tryAutoLogin();
+
+        if (isAdmin) {
+          ref.read(adminUserControllerProvider.notifier).refresh();
+        } else {
+          await ref.read(authControllerProvider.notifier).tryAutoLogin();
+        }
+
+        if (mounted && newActor != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profil créé avec succès")),
+          );
+          // Utilisation de context.go pour forcer le rafraîchissement complet de la route
+          context.go('/actors/${newActor.id}');
+        }
       } else {
+        // MODIFICATION
         await notifier.updateActor(
           widget.actor!.id,
           npi: _npiController.text,
@@ -132,13 +151,19 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
           phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
         );
         ref.invalidate(actorDetailProvider(widget.actor!.id));
-      }
+        
+        if (isAdmin) {
+          ref.read(adminUserControllerProvider.notifier).refresh();
+        } else {
+          await ref.read(authControllerProvider.notifier).tryAutoLogin();
+        }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil mis à jour avec succès")),
-        );
-        context.go('/actors');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profil mis à jour avec succès")),
+          );
+          context.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -155,7 +180,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.actor == null ? "Mon Profil Acteur" : "Modifier mes informations"),
+        title: Text(widget.actor == null ? "Création Profil Acteur" : "Modifier les informations"),
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -271,7 +296,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
-                    child: Text(widget.actor == null ? "CRÉER MON PROFIL" : "SAUVEGARDER LES MODIFICATIONS"),
+                    child: const Text("VALIDER"),
                   ),
                 ],
               ),

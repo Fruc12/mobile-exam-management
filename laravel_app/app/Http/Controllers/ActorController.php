@@ -37,6 +37,7 @@ class ActorController extends Controller
             abort(Response::HTTP_FORBIDDEN, "Vous avez déjà renseigné vos informations d'acteur");
         }
         $validatedData = $request->validate([
+            'user_id' => 'nullable|exists:users,id',
             'npi' => 'required|numeric|digits_between:11,11|unique:actors',
             'n_rib' => 'required|alpha_num|size:32',
             'id_card' => 'required|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
@@ -47,7 +48,9 @@ class ActorController extends Controller
             'bank' => 'required|in:NSIA,UBA,ECOBANK,BOA,LA POSTE,CORIS,ORABANK',
             'phone' => 'nullable|unique:actors|numeric|digits_between:10,10',
         ]);
-        $validatedData['user_id'] = Auth::id();
+        if (!$request->filled('user_id')) {
+            $validatedData['user_id'] = Auth::id();
+        }
 
         if ($request->hasFile('rib')) {
             $validatedData['rib'] = $request->file('rib')->store('ribs', 'public');

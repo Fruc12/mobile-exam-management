@@ -23,10 +23,10 @@ class ActorFormScreen extends ConsumerStatefulWidget {
 class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _npiController;
-  late TextEditingController _nRibController;
-  late TextEditingController _birthplaceController;
-  late TextEditingController _phoneController;
+  late final TextEditingController _npiController;
+  late final TextEditingController _nRibController;
+  late final TextEditingController _birthplaceController;
+  late final TextEditingController _phoneController;
 
   String _selectedDiploma = 'BAC';
   String _selectedBank = 'NSIA';
@@ -62,9 +62,9 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
   }
 
   Future<void> _pickFile(bool isIdCard) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: const ['jpg', 'jpeg', 'png'],
     );
 
     if (result != null) {
@@ -109,7 +109,6 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
       final isAdmin = currentUser?.isAdmin ?? false;
 
       if (widget.actor == null) {
-        // CRÉATION
         final newActor = await notifier.createActor(
           npi: _npiController.text,
           nRib: _nRibController.text,
@@ -133,11 +132,9 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Profil créé avec succès")),
           );
-          // Utilisation de context.go pour forcer le rafraîchissement complet de la route
           context.go('/actors/${newActor.id}');
         }
       } else {
-        // MODIFICATION
         await notifier.updateActor(
           widget.actor!.id,
           npi: _npiController.text,
@@ -180,7 +177,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.actor == null ? "Création Profil Acteur" : "Modifier les informations"),
+        title: Text(widget.actor == null ? "Création Profil Acteur" : "Modifier mes informations"),
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -223,7 +220,10 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _birthplaceController,
-                    decoration: const InputDecoration(labelText: "Lieu de naissance", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Lieu de naissance", 
+                      border: OutlineInputBorder()
+                    ),
                     validator: (v) => (v == null || v.isEmpty) ? "Champ obligatoire" : null,
                   ),
                   const SizedBox(height: 16),
@@ -245,19 +245,34 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedDiploma,
-                    decoration: const InputDecoration(labelText: "Dernier diplôme obtenu", border: OutlineInputBorder()),
-                    items: ['BAC', 'LICENCE', 'MASTER', 'DOCTORAT']
-                        .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                        .toList(),
+                    decoration: const InputDecoration(
+                      labelText: "Dernier diplôme obtenu", 
+                      border: OutlineInputBorder()
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'BAC', child: Text('BAC')),
+                      DropdownMenuItem(value: 'LICENCE', child: Text('LICENCE')),
+                      DropdownMenuItem(value: 'MASTER', child: Text('MASTER')),
+                      DropdownMenuItem(value: 'DOCTORAT', child: Text('DOCTORAT')),
+                    ],
                     onChanged: (value) => setState(() => _selectedDiploma = value!),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedBank,
-                    decoration: const InputDecoration(labelText: "Votre Banque", border: OutlineInputBorder()),
-                    items: ['NSIA', 'UBA', 'ECOBANK', 'BOA', 'LA POSTE', 'CORIS', 'ORABANK']
-                        .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                        .toList(),
+                    decoration: const InputDecoration(
+                      labelText: "Votre Banque", 
+                      border: OutlineInputBorder()
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'NSIA', child: Text('NSIA')),
+                      DropdownMenuItem(value: 'UBA', child: Text('UBA')),
+                      DropdownMenuItem(value: 'ECOBANK', child: Text('ECOBANK')),
+                      DropdownMenuItem(value: 'BOA', child: Text('BOA')),
+                      DropdownMenuItem(value: 'LA POSTE', child: Text('LA POSTE')),
+                      DropdownMenuItem(value: 'CORIS', child: Text('CORIS')),
+                      DropdownMenuItem(value: 'ORABANK', child: Text('ORABANK')),
+                    ],
                     onChanged: (value) => setState(() => _selectedBank = value!),
                   ),
                   const SizedBox(height: 16),
@@ -265,7 +280,10 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                     title: const Text("Date de naissance"),
                     subtitle: Text("${_selectedDate.toLocal()}".split(' ')[0]),
                     trailing: const Icon(Icons.calendar_today),
-                    shape: RoundedRectangleBorder(side: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(4)),
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(color: Colors.grey), 
+                      borderRadius: BorderRadius.circular(4)
+                    ),
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
@@ -277,17 +295,20 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  const Text("Documents justificatifs (Max 2Mo)", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Documents justificatifs (Max 2Mo)", 
+                    style: TextStyle(fontWeight: FontWeight.bold)
+                  ),
                   const SizedBox(height: 8),
                   _FilePickerTile(
-                    label: "Carte d'identité (JPG, PNG, PDF)",
+                    label: "Carte d'identité (JPG, PNG)",
                     file: _idCardFile,
                     onTap: () => _pickFile(true),
                     isExisting: widget.actor?.idCard != null,
                   ),
                   const SizedBox(height: 8),
                   _FilePickerTile(
-                    label: "RIB (JPG, PNG, PDF)",
+                    label: "RIB (JPG, PNG)",
                     file: _ribFile,
                     onTap: () => _pickFile(false),
                     isExisting: widget.actor?.rib != null,
@@ -295,7 +316,9 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: _submit,
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16)
+                    ),
                     child: const Text("VALIDER"),
                   ),
                 ],
@@ -312,15 +335,26 @@ class _FilePickerTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool isExisting;
 
-  const _FilePickerTile({required this.label, required this.file, required this.onTap, required this.isExisting});
+  const _FilePickerTile({
+    required this.label, 
+    required this.file, 
+    required this.onTap, 
+    required this.isExisting
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(label),
       subtitle: Text(
-        file != null ? file!.path.split('/').last : (isExisting ? "Document déjà envoyé ✓" : "Aucun fichier sélectionné"),
-        style: TextStyle(color: file != null ? Colors.green : (isExisting ? Colors.blue : Colors.red)),
+        file != null 
+            ? file!.path.split('/').last 
+            : (isExisting ? "Document déjà envoyé ✓" : "Aucun fichier sélectionné"),
+        style: TextStyle(
+          color: file != null 
+              ? Colors.green 
+              : (isExisting ? Colors.blue : Colors.red)
+        ),
       ),
       trailing: const Icon(Icons.attach_file),
       tileColor: Colors.grey[100],

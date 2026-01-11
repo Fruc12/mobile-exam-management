@@ -353,14 +353,13 @@ class ActorDetailScreen extends ConsumerWidget {
 
   Widget _buildDocumentPreview(BuildContext context, String title, String fileName) {
     final mediaUrl = "${ApiConfig.baseUrl}/storage/$fileName";
-    final isPdf = fileName.toLowerCase().endsWith('.pdf');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: () => _showFullScreenMedia(context, mediaUrl, isPdf),
+          onTap: () => _showFullScreenMedia(context, mediaUrl),
           child: Container(
             height: 180,
             width: double.infinity,
@@ -371,17 +370,7 @@ class ActorDetailScreen extends ConsumerWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: isPdf
-                  ? const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.picture_as_pdf, size: 60, color: Colors.red),
-                        SizedBox(height: 8),
-                        Text("Document PDF", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text("Cliquez pour prévisualiser", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    )
-                  : Image.network(
+              child: Image.network(
                       mediaUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 40, color: Colors.grey),
@@ -393,22 +382,17 @@ class ActorDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showFullScreenMedia(BuildContext context, String url, bool isPdf) {
+  void _showFullScreenMedia(BuildContext context, String url) {
     showDialog(
       context: context,
       builder: (context) => Dialog.fullscreen(
         child: Scaffold(
           appBar: AppBar(
             leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-            title: Text(isPdf ? "Aperçu PDF" : "Aperçu Image"),
+            title: Text("Aperçu Image"),
           ),
           body: Center(
-            child: isPdf
-                ? const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Icon(Icons.picture_as_pdf, size: 100, color: Colors.red), SizedBox(height: 20), Text("Prévisualisation PDF complète")],
-                  )
-                : InteractiveViewer(child: Image.network(url, fit: BoxFit.contain)),
+            child: InteractiveViewer(child: Image.network(url, fit: BoxFit.contain)),
           ),
         ),
       ),

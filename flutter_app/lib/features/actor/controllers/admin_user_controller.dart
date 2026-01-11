@@ -30,17 +30,12 @@ class AdminUserController extends StateNotifier<AsyncValue<List<UserModel>>> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _service.getAllUsers());
-  }
-
-  List<UserModel> filterUsers(List<UserModel> users, String query) {
-    if (query.isEmpty) return users;
-    final lowerQuery = query.toLowerCase();
-    return users.where((u) {
-      return u.name.toLowerCase().contains(lowerQuery) || 
-             u.email.toLowerCase().contains(lowerQuery);
-    }).toList();
+    // Si on a déjà des données, on ne met pas en loading pour éviter le spinner bloquant
+    final hasData = state.hasValue;
+    if (!hasData) state = const AsyncValue.loading();
+    
+    final result = await AsyncValue.guard(() => _service.getAllUsers());
+    state = result;
   }
 }
 
@@ -49,3 +44,18 @@ final adminUserControllerProvider = StateNotifierProvider<AdminUserController, A
 });
 
 final searchQueryProvider = StateProvider<String>((ref) => "");
+
+// OPTIMISATION : Provider filtré mémorisé (Memoized)
+// Ce provider ne recalculera la liste que si les utilisateurs changent OU si la recherche change.
+final filteredUsersProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
+  final usersAsync = ref.watch(adminUserControllerProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+
+  return usersAsync.whenData((users) {
+    if (query.isEmpty) return users;
+    return users.where((u) => 
+      u.name.toLowerCase().contains(query) || 
+      u.email.toLowerCase().contains(query)
+    ).toList();
+  });
+});

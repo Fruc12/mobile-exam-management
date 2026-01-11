@@ -12,8 +12,8 @@ class ActorListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
-    final user = authState.user;
+    // Optimisation : On n'écoute que ce qui est nécessaire pour cette page
+    final user = ref.watch(authControllerProvider.select((s) => s.user));
 
     if (user == null) {
       return const Scaffold(
@@ -50,8 +50,8 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final usersAsync = ref.watch(adminUserControllerProvider);
-    ref.watch(searchQueryProvider); // Rebuild on search change
+    // Utilisation du provider filtré optimisé
+    final filteredUsersAsync = ref.watch(filteredUsersProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -101,23 +101,22 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
           ),
         ),
       ),
-      body: usersAsync.when(
+      body: filteredUsersAsync.when(
         data: (users) {
-          final filteredUsers = ref.read(adminUserControllerProvider.notifier).filterUsers(users, _searchController.text);
-          
-          if (filteredUsers.isEmpty) {
+          if (users.isEmpty) {
             return const Center(child: Text("Aucun utilisateur trouvé"));
           }
 
           return RefreshIndicator(
             onRefresh: () => ref.read(adminUserControllerProvider.notifier).refresh(),
             child: ListView.builder(
-              itemCount: filteredUsers.length,
+              itemCount: users.length,
               itemBuilder: (context, index) {
-                final user = filteredUsers[index];
+                final user = users[index];
                 final hasActor = user.actor != null;
 
                 return ListTile(
+                  key: ValueKey(user.id), // Performance : Aide Flutter à identifier les éléments
                   leading: CircleAvatar(
                     backgroundColor: hasActor ? Colors.green.shade100 : Colors.orange.shade100,
                     child: Icon(
@@ -132,7 +131,6 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
                     if (hasActor) {
                       context.push('/actors/${user.actor!.id}');
                     } else {
-                      // On redirige vers la page de détails avec l'ID utilisateur même s'il n'a pas d'acteur
                       context.push('/actors/0?userId=${user.id}');
                     }
                   },

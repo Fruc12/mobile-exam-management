@@ -124,7 +124,5 @@ final appBootstrapProvider = FutureProvider<void>((ref) async {
   } on DioException {
     await SecureStorage.clear();
     rethrow;
-  } catch (_) {
-    await SecureStorage.clear();
   }
 });

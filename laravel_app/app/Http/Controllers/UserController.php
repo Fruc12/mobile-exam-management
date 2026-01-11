@@ -169,7 +169,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Utilisateur authentifié récupéré avec succès",
-            'data' => Auth::user(),
+            'data' => Auth::user()->load('actor'),
         ]);
     }
 

@@ -14,8 +14,8 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _service.getActors());
+    // state = const AsyncValue.loading();
+    // state = await AsyncValue.guard(() => _service.getActors());
   }
 
   Future<void> createActor({
@@ -41,7 +41,7 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
           bank: bank,
           phone: phone,
         ));
-    
+
     if (!result.hasError) {
       await refresh();
     } else {
@@ -74,7 +74,7 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
           bank: bank,
           phone: phone,
         ));
-    
+
     if (!result.hasError) {
       await refresh();
     } else {
@@ -96,4 +96,8 @@ class ActorController extends StateNotifier<AsyncValue<List<ActorModel>>> {
 final actorControllerProvider =
     StateNotifierProvider<ActorController, AsyncValue<List<ActorModel>>>((ref) {
   return ActorController(ref.watch(actorServiceProvider));
+});
+
+final actorDetailProvider = FutureProvider.family<ActorModel, int>((ref, id) async {
+  return ref.watch(actorServiceProvider).getActor(id);
 });

@@ -7,6 +7,7 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/otp_verification_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../features/actor/models/actor_model.dart';
+import '../features/actor/screens/actor_detail_screen.dart';
 import '../features/actor/screens/actor_form_screen.dart';
 import '../features/actor/screens/actor_list_screen.dart';
 import '../features/home/home_screen.dart';
@@ -15,7 +16,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
 
   return GoRouter(
-    // On définit l'emplacement initial dynamiquement dès le départ
     initialLocation: authState.isAuthenticated ? '/actors' : '/login',
     redirect: (context, state) {
       final loggedIn = authState.isAuthenticated;
@@ -62,9 +62,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: ':id',
             builder: (context, state) {
-              // Pour l'édition, on peut passer l'objet actor via extra
-              return ActorFormScreen(actor: state.extra as ActorModel?);
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              return ActorDetailScreen(actorId: id ?? 0);
             },
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  return ActorFormScreen(actor: state.extra as ActorModel?);
+                },
+              ),
+            ],
           ),
         ],
       ),

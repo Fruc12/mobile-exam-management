@@ -90,8 +90,8 @@ class ActorController extends Controller
         $validatedData = $request->validate([
             'npi' => 'required|numeric|digits_between:11,11|'.Rule::unique('actors','npi')->ignore($actor->id),
             'n_rib' => 'required|alpha_num|size:32',
-            'id_card' => 'required|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
-            'rib' => 'required|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
+            'id_card' => 'nullable|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
+            'rib' => 'nullable|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
             'birthdate' => 'required|date',
             'birthplace' => 'required|string',
             'diploma' => 'required|in:BAC,LICENCE,MASTER,DOCTORAT',
@@ -111,11 +111,11 @@ class ActorController extends Controller
         $actor->update($validatedData);
         return response()->json([
             'success' => true,
-            'message' => 'Acteur créé avec succès',
+            'message' => 'Acteur mis à jour avec succès',
             'data' => $actor->loadMissing('user'),
         ]);
     }
-
+    
     /**
      * Remove the specified resource from storage.
      */

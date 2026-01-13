@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/auth/controllers/auth_controller.dart';
 import 'routes/app_router.dart';
-import 'features/auth/controllers/auth_controller.dart'; // Import pour appBootstrapProvider
 
 void main() {
   runApp(

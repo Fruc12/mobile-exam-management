@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/network/dio_client.dart';
 import '../../auth/models/user_model.dart';
 

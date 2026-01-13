@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/actor_controller.dart';
-import '../models/actor_model.dart';
 import '../controllers/admin_user_controller.dart';
+import '../models/actor_model.dart';
 
 class ActorFormScreen extends ConsumerStatefulWidget {
   final ActorModel? actor;

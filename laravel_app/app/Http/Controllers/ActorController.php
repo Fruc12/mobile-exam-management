@@ -42,7 +42,7 @@ class ActorController extends Controller
             'n_rib' => 'required|alpha_num|size:32',
             'id_card' => 'required|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
             'rib' => 'required|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
-            'birthdate' => 'required|date',
+            'birthdate' => 'required|date|before:today',
             'birthplace' => 'required|string',
             'diploma' => 'required|in:BAC,LICENCE,MASTER,DOCTORAT',
             'bank' => 'required|in:NSIA,UBA,ECOBANK,BOA,LA POSTE,CORIS,ORABANK',
@@ -95,12 +95,16 @@ class ActorController extends Controller
             'n_rib' => 'required|alpha_num|size:32',
             'id_card' => 'nullable|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
             'rib' => 'nullable|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
-            'birthdate' => 'required|date',
+            'birthdate' => 'required|date|before:today',
             'birthplace' => 'required|string',
             'diploma' => 'required|in:BAC,LICENCE,MASTER,DOCTORAT',
             'bank' => 'required|in:NSIA,UBA,ECOBANK,BOA,LA POSTE,CORIS,ORABANK',
             'phone' => 'nullable|numeric|digits_between:10,10|'.Rule::unique('actors','phone')->ignore($actor->id),
         ]);
+
+        if (!$request->filled('phone')) {
+            $validatedData['phone'] = null;
+        }
 
         if ($request->hasFile('rib')) {
             Storage::disk('public')->delete($actor->rib);

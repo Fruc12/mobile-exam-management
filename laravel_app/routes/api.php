@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\ActorController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\CheckUserEmailVerificationMiddleware;
-use App\Http\Middleware\GuestMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest.api'])->group(function () {
@@ -12,6 +10,8 @@ Route::middleware(['guest.api'])->group(function () {
     Route::post('/register', [UserController::class , 'register'])->name('register');
     Route::post('/email/verification-notification', [UserController::class, 'sendEmailVerificationNotification'])
             ->middleware('throttle:6,1')->name('verification.send');
+    Route::post('/forgot-password', [UserController::class, 'forgotPassword'])->name('password.email');
+    Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::middleware(['auth:sanctum', 'email.verified'])->group(function () {
@@ -21,5 +21,5 @@ Route::middleware(['auth:sanctum', 'email.verified'])->group(function () {
 //    Route::get('/email/verify', [UserController::class , 'noticeEmailVerification'])
 //            ->name('verification.notice');
 
-    Route::apiResource('/actors', ActorController::class);
+    Route::apiResource('/actors', ActorController::class)->except(['index']);
 });

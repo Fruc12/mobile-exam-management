@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OTP;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
@@ -11,9 +11,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Spatie\OneTimePasswords\Models\OneTimePassword;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
+
+use function Illuminate\Log\log;
 
 class UserController extends Controller
 {
@@ -193,7 +197,7 @@ class UserController extends Controller
             event(new Verified($user));
         }
 
-        return redirect('/');
+        return redirect()->route('email.success');
     }
 
 
@@ -219,20 +223,60 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function forgotPassword(Request $request) : JsonResponse
     {
-        //
+        $request->validate(['email' => 'required|email']);
+    
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === Password::ResetLinkSent) {
+            return response()->json([
+                'success' => true,
+                'message' => __($status)
+            ]);
+        }
+        log('Password Reset Mailing Error : ' . __($status));
+        return response()->json([
+            // 'success' => false,
+            'message' => __($status)
+        ], Response::HTTP_BAD_REQUEST);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+    public function resetPassword(Request $request) : JsonResponse
     {
-        //
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+    
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+    
+                $user->save();
+    
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PasswordReset) {
+            return response()->json([
+                'success' => true,
+                'message' => __($status)
+            ]);
+        }
+        log('Password Reseting Error : ' . __($status));
+        return response()->json([
+            // 'success' => false,
+            'message' => __($status)
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     /**

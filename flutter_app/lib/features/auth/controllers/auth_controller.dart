@@ -105,6 +105,11 @@ class AuthController extends StateNotifier<AuthState> {
     await SecureStorage.clear();
     state = const AuthState(isAuthenticated: false);
   }
+
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    final response = await _authService.sendPasswordResetEmail(email);
+
+  }
 }
 
 /// ----------------------

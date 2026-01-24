@@ -48,4 +48,11 @@ class AuthService {
     );
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    await dio.post(
+      '/api/forgot-password',
+      data: {'email': email},
+    );
+  }
+
 }

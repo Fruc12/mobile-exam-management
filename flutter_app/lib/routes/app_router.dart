@@ -1,3 +1,4 @@
+import 'package:exam_management/features/auth/screens/password_reset_mailing_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,7 +23,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final loggingIn = state.uri.toString() == '/login' ||
           state.uri.toString() == '/register' ||
           state.uri.toString() == '/otp' ||
-          state.uri.toString() == '/verify-email-info';
+          state.uri.toString() == '/verify-email-info' ||
+          state.uri.toString() == '/forgot-password';
 
       if (!loggedIn && !loggingIn) return '/login';
       if (loggedIn && loggingIn) return '/actors';
@@ -46,6 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/verify-email-info',
         builder: (_, __) => const EmailVerificationInfoScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (_, __) => const PasswordResetMailingScreen(),
       ),
       GoRoute(
         path: '/home',

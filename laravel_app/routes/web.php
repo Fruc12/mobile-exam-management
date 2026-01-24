@@ -13,7 +13,7 @@ Route::middleware('guest')->group( function () {
     Route::get('/email-verified-successfully', function () {
         return view('auth.email-verification-success');
     })->name('email.success');
-    Route::get('/reset-password', function () {
+    Route::get('/reset-password/{token}', function () {
         return view('auth.reset-password');
     })->name('password.reset');
 });

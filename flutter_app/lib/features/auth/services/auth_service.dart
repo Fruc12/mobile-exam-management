@@ -55,4 +55,11 @@ class AuthService {
     );
   }
 
+  Future<void> resetPassword(String token, String email, String password) async {
+    await dio.post(
+      '/api/reset-password',
+      data: {'token': token, 'email': email, 'password': password},
+    );
+  }
+
 }

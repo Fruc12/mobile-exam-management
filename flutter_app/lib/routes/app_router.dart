@@ -1,4 +1,4 @@
-import 'package:exam_management/features/auth/screens/password_reset_mailing_screen.dart';
+import 'package:exam_management/features/auth/screens/password_forgot_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,7 +24,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.uri.toString() == '/register' ||
           state.uri.toString() == '/otp' ||
           state.uri.toString() == '/verify-email-info' ||
-          state.uri.toString() == '/forgot-password';
+          state.uri.toString() == '/forgot-password' ||
+          state.uri.toString().startsWith('/reset-password');
 
       if (!loggedIn && !loggingIn) return '/login';
       if (loggedIn && loggingIn) return '/actors';
@@ -35,35 +36,42 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (_, __) => const LoginScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/register',
-        builder: (_, __) => const RegisterScreen(),
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/otp',
-        builder: (_, __) => const OtpVerificationScreen(),
+        builder: (context, state) => const OtpVerificationScreen(),
       ),
       GoRoute(
         path: '/verify-email-info',
-        builder: (_, __) => const EmailVerificationInfoScreen(),
+        builder: (context, state) => const EmailVerificationInfoScreen(),
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (_, __) => const PasswordResetMailingScreen(),
+        builder: (context, state) => const PasswordResetMailingScreen(),
       ),
+      // GoRoute(
+      //   path: '/reset-password/:token',
+      //   builder: (context, state) {
+      //     final String token = state.pathParameters['token'] ?? '';
+      //     return PasswordResetScreen(token: token);
+      //   },
+      // ),
       GoRoute(
         path: '/home',
-        builder: (_, __) => const HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
         path: '/actors',
-        builder: (_, __) => const ActorListScreen(),
+        builder: (context, state) => const ActorListScreen(),
         routes: [
           GoRoute(
             path: 'create',
-            builder: (_, state) {
+            builder: (context, state) {
               final userId = state.uri.queryParameters['userId'];
               return ActorFormScreen(userId: userId != null ? int.tryParse(userId) : null);
             },

@@ -13,6 +13,7 @@
                 <p>Veuillez remplir le formulaire ci-dessous.</p>
                 <ul>
                     <form action="{{ route('password.update') }}" method="post">
+                        @csrf
                         <input type="hidden" name="token" value="{{ request()->route('token') }}">
                         <li class="mb-4">
                             <label for="email">Adresse e-mail</label>

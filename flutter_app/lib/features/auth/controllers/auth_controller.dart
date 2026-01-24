@@ -107,8 +107,11 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   Future<void> sendPasswordResetEmail({required String email}) async {
-    final response = await _authService.sendPasswordResetEmail(email);
+    await _authService.sendPasswordResetEmail(email);
+  }
 
+  Future<void> resetPassword({required String token, required String email, required String password}) async {
+    await _authService.resetPassword(token, email, password);
   }
 }
 

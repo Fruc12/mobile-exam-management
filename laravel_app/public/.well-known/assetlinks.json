@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.exam_management.git.flutter_app",
+      "sha256_cert_fingerprints": [
+        " 01:00:A2:AC:23:20:CB:3D:7F:07:99:4B:FA:34:DB:2B:28:B3:37:2C:DA:F7:7C:3C:41:E6:FA:E2:9C:38:52:A1"
+      ]
+    }
+  }
+]

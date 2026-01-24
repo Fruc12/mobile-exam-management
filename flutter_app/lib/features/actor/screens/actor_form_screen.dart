@@ -244,7 +244,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedDiploma,
+                    initialValue: _selectedDiploma,
                     decoration: const InputDecoration(
                       labelText: "Dernier diplôme obtenu", 
                       border: OutlineInputBorder()
@@ -259,7 +259,7 @@ class _ActorFormScreenState extends ConsumerState<ActorFormScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedBank,
+                    initialValue: _selectedBank,
                     decoration: const InputDecoration(
                       labelText: "Votre Banque", 
                       border: OutlineInputBorder()

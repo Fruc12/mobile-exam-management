@@ -34,9 +34,9 @@ class AppServiceProvider extends ServiceProvider
             return false;
         });
 
-        ResetPassword::createUrlUsing(function (User $user, string $token) {
-            return config('app.url').'/reset-password?token='.$token;
-        });
+        // ResetPassword::createUrlUsing(function (User $user, string $token) {
+        //     return config('app.url').'/reset-password?token='.$token;
+        // });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)

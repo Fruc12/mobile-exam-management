@@ -6,6 +6,7 @@ import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/screens/email_verification_info_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/otp_verification_screen.dart';
+import '../../features/auth/screens/password_reset_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../features/actor/models/actor_model.dart';
 import '../features/actor/screens/actor_detail_screen.dart';
@@ -20,13 +21,15 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: authState.isAuthenticated ? '/actors' : '/login',
     redirect: (context, state) {
       final loggedIn = authState.isAuthenticated;
-      final loggingIn = state.uri.toString() == '/login' ||
+      if (state.uri.toString().contains('/reset-password')) {
+        return state.uri.toString();
+      }
+      final loggingIn =
+          state.uri.toString() == '/login' ||
           state.uri.toString() == '/register' ||
           state.uri.toString() == '/otp' ||
           state.uri.toString() == '/verify-email-info' ||
-          state.uri.toString() == '/forgot-password' ||
-          state.uri.toString().startsWith('/reset-password');
-
+          state.uri.toString() == '/forgot-password';
       if (!loggedIn && !loggingIn) return '/login';
       if (loggedIn && loggingIn) return '/actors';
 
@@ -34,10 +37,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
 
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -54,17 +55,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const PasswordResetMailingScreen(),
       ),
-      // GoRoute(
-      //   path: '/reset-password/:token',
-      //   builder: (context, state) {
-      //     final String token = state.pathParameters['token'] ?? '';
-      //     return PasswordResetScreen(token: token);
-      //   },
-      // ),
       GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
+        path: '/reset-password/:token',
+        builder: (context, state) {
+          final String token = state.pathParameters['token'] ?? '';
+          final String email = state.uri.queryParameters['email'] ?? '';
+          return PasswordResetScreen(token: token, email: email);
+        },
       ),
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
       GoRoute(
         path: '/actors',
         builder: (context, state) => const ActorListScreen(),
@@ -73,7 +72,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'create',
             builder: (context, state) {
               final userId = state.uri.queryParameters['userId'];
-              return ActorFormScreen(userId: userId != null ? int.tryParse(userId) : null);
+              return ActorFormScreen(
+                userId: userId != null ? int.tryParse(userId) : null,
+              );
             },
           ),
           GoRoute(
@@ -81,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final id = int.tryParse(state.pathParameters['id'] ?? '');
               final userId = state.uri.queryParameters['userId'];
-              
+
               return ActorDetailScreen(
                 actorId: (id != 0 && id != null) ? id : null,
                 userId: userId != null ? int.tryParse(userId) : null,

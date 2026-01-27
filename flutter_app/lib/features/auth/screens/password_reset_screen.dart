@@ -7,15 +7,17 @@ import '../controllers/auth_controller.dart';
 
 class PasswordResetScreen extends ConsumerStatefulWidget {
   final String token;
+  final String email;
 
-  const PasswordResetScreen({super.key, required this.token});
+  const PasswordResetScreen({super.key, required this.token, required this.email});
 
   @override
   ConsumerState<PasswordResetScreen> createState() => _PasswordResetScreenState();
 }
 
 class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
-  final _emailController = TextEditingController();
+  String get email => widget.email;
+  late final _emailController = TextEditingController(text: email);
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -68,6 +70,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
         token: widget.token,
         email: _emailController.text.trim(),
         password: password,
+        confirmPassword: confirmPassword,
       );
 
       _showBanner(
